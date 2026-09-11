@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>그림 공부 비서</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600&family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #F7F3EC;
+    --paper-line: #E7E0D0;
+    --panel: #FFFEFB;
+    --ink: #2B2A28;
+    --ink-soft: #706A5C;
+    --accent: #3F6DA8;
+    --accent-soft: #E7EEF7;
+    --accent-line: #B9CBE3;
+    --warn: #B5533C;
+    --warn-soft: #F6E7E2;
+    --radius: 10px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    background-image:
+      linear-gradient(var(--paper-line) 1px, transparent 1px);
+    background-size: 100% 32px;
+    color: var(--ink);
+    font-family: 'Noto Sans KR', sans-serif;
+    min-height: 100vh;
+  }
+
+  h1, h2, h3 { font-family: 'Noto Serif KR', serif; font-weight: 600; margin: 0; }
+
+  button { font-family: inherit; cursor: pointer; }
+
+  .app {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 28px 20px 60px;
+  }
+
+  /* ---------- 상단바 ---------- */
+  .topbar {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding-bottom: 18px;
+    border-bottom: 2px solid var(--ink);
+    margin-bottom: 22px;
+  }
+
+  .brand h1 { font-size: 26px; }
+  .brand p { margin: 4px 0 0; color: var(--ink-soft); font-size: 14px; }
+
+  .summary-badge {
+    display: flex;
+    gap: 18px;
+    background: var(--panel);
+    border: 1px solid var(--paper-line);
+    border-radius: var(--radius);
+    padding: 10px 18px;
+    font-size: 13px;
+  }
+  .summary-badge .item { text-align: center; }
+  .summary-badge .label { color: var(--ink-soft); display: block; font-size: 11px; margin-bottom: 2px; }
+  .summary-badge .value { font-weight: 600; font-size: 15px; }
+  .summary-badge .value.trend-상승 { color: var(--accent); }
+  .summary-badge .value.trend-하락 { color: var(--warn); }
+
+  /* ---------- 레이아웃: 왼쪽 탭 + 본문 ---------- */
+  .layout {
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+
+  .tabs {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    position: sticky;
+    top: 20px;
+  }
+
+  .tab-btn {
+    text-align: left;
+    background: transparent;
+    border: none;
+    border-left: 3px solid transparent;
+    padding: 10px 12px;
+    font-size: 14px;
+    color: var(--ink-soft);
+    border-radius: 0 6px 6px 0;
+  }
+  .tab-btn:hover { background: var(--paper-line); color: var(--ink); }
+  .tab-btn.active {
+    border-left-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .panel {
+    display: none;
+    background: var(--panel);
+    border: 1px solid var(--paper-line);
+    border-radius: var(--radius);
+    padding: 22px;
+    min-height: 460px;
+  }
+  .panel.active { display: block; }
+
+  .panel h2 { font-size: 18px; margin-bottom: 14px; }
+  .hint { color: var(--ink-soft); font-size: 13px; margin: -8px 0 16px; }
+
+  /* ---------- 채팅 ---------- */
+  #chatWindow {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    height: 340px;
+    overflow-y: auto;
+    padding: 4px 4px 10px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--paper-line);
+  }
+
+  .msg { max-width: 78%; padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.5; white-space: pre-wrap; }
+  .msg.user { align-self: flex-end; background: var(--accent); color: #fff; border-bottom-right-radius: 3px; }
+  .msg.assistant { align-self: flex-start; background: var(--accent-soft); color: var(--ink); border-bottom-left-radius: 3px; }
+  .msg.system { align-self: center; color: var(--ink-soft); font-size: 12px; }
+  .msg.loading { align-self: flex-start; color: var(--ink-soft); font-style: italic; }
+
+  .chat-input-row { display: flex; gap: 8px; }
+  .chat-input-row input {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid var(--paper-line);
+    border-radius: 8px;
+    font-size: 14px;
+    background: var(--paper);
+  }
+
+  .btn {
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--accent);
+    background: var(--accent);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn.secondary { background: transparent; color: var(--accent); }
+  .btn.danger { background: transparent; color: var(--warn); border-color: var(--warn); padding: 6px 10px; font-size: 13px; }
+  .btn.small { padding: 6px 10px; font-size: 13px; }
+
+  .chat-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+
+  /* ---------- 데이터 기록 ---------- */
+  .record-form {
+    display: grid;
+    grid-template-columns: 140px 100px 1fr auto;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+  .record-form input {
+    padding: 9px 10px;
+    border: 1px solid var(--paper-line);
+    border-radius: 8px;
+    font-size: 14px;
+    background: var(--paper);
+  }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 9px 8px; border-bottom: 1px solid var(--paper-line); }
+  th { color: var(--ink-soft); font-weight: 500; font-size: 12px; }
+  td.actions { display: flex; gap: 6px; }
+  td input { width: 100%; padding: 5px 6px; border: 1px solid var(--accent-line); border-radius: 6px; }
+
+  /* ---------- 대화 기록 ---------- */
+  .convo-list { display: flex; flex-direction: column; gap: 8px; }
+  .convo-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 14px;
+    border: 1px solid var(--paper-line);
+    border-radius: 8px;
+    background: var(--paper);
+  }
+  .convo-item .title { font-weight: 500; }
+  .convo-item .date { color: var(--ink-soft); font-size: 12px; }
+  .convo-item .buttons { display: flex; gap: 6px; }
+
+  /* ---------- 설정 ---------- */
+  .settings-field { margin-bottom: 16px; }
+  .settings-field label { display: block; font-size: 13px; color: var(--ink-soft); margin-bottom: 6px; }
+  .settings-field input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--paper-line);
+    border-radius: 8px;
+    font-size: 14px;
+    background: var(--paper);
+  }
+  .status-line { font-size: 13px; margin-top: 10px; }
+  .status-line.ok { color: var(--accent); }
+  .status-line.err { color: var(--warn); }
+
+  .empty { color: var(--ink-soft); font-size: 14px; padding: 20px 0; text-align: center; }
+
+  @media (max-width: 640px) {
+    .layout { grid-template-columns: 1fr; }
+    .tabs { position: static; flex-direction: row; overflow-x: auto; }
+    .record-form { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <h1>그림 공부 비서</h1>
+        <p>내 그림 연습 기록을 아는 AI에게 물어보세요</p>
+      </div>
+      <div class="summary-badge" id="summaryBadge">
+        <div class="item"><span class="label">기간</span><span class="value">불러오는 중</span></div>
+        <div class="item"><span class="label">기록 수</span><span class="value">-</span></div>
+        <div class="item"><span class="label">추세</span><span class="value">-</span></div>
+      </div>
+    </header>
+
+    <div class="layout">
+      <nav class="tabs">
+        <button class="tab-btn active" data-tab="chat">💬 채팅</button>
+        <button class="tab-btn" data-tab="data">📝 기록</button>
+        <button class="tab-btn" data-tab="history">🗂 대화 기록</button>
+        <button class="tab-btn" data-tab="settings">⚙ 설정</button>
+      </nav>
+
+      <main>
+        <!-- 채팅 -->
+        <section class="panel active" id="panel-chat">
+          <div class="chat-toolbar">
+            <h2>채팅</h2>
+            <button class="btn secondary small" id="newChatBtn">새 대화 시작</button>
+          </div>
+          <div id="chatWindow"></div>
+          <form class="chat-input-row" id="chatForm">
+            <input type="text" id="chatInput" placeholder="예: 이번 주 그림 연습 어땠어?" autocomplete="off" />
+            <button type="submit" class="btn" id="sendBtn">보내기</button>
+          </form>
+        </section>
+
+        <!-- 데이터 기록 -->
+        <section class="panel" id="panel-data">
+          <h2>그림 연습 기록</h2>
+          <p class="hint">날짜, 그린 개수, 메모를 입력해서 기록을 추가하세요.</p>
+          <form class="record-form" id="recordForm">
+            <input type="date" id="recDate" required />
+            <input type="number" id="recValue" min="0" placeholder="개수" required />
+            <input type="text" id="recMemo" placeholder="메모 (선택)" />
+            <button type="submit" class="btn small">추가</button>
+          </form>
+          <table>
+            <thead>
+              <tr><th>날짜</th><th>개수</th><th>메모</th><th></th></tr>
+            </thead>
+            <tbody id="recordTableBody"></tbody>
+          </table>
+          <div class="empty" id="recordEmpty" style="display:none;">아직 기록이 없어요. 위에서 첫 기록을 추가해보세요.</div>
+        </section>
+
+        <!-- 대화 기록 -->
+        <section class="panel" id="panel-history">
+          <h2>대화 기록</h2>
+          <p class="hint">지난 대화를 불러오면 채팅 탭에서 이어서 볼 수 있어요.</p>
+          <div class="convo-list" id="convoList"></div>
+          <div class="empty" id="convoEmpty" style="display:none;">아직 저장된 대화가 없어요.</div>
+        </section>
+
+        <!-- 설정 -->
+        <section class="panel" id="panel-settings">
+          <h2>설정</h2>
+          <div class="settings-field">
+            <label for="apiBaseInput">백엔드 API 주소 (예: https://your-app.onrender.com)</label>
+            <input type="text" id="apiBaseInput" placeholder="https://..." value="http://127.0.0.1:8000" />
+          </div>
+          <button class="btn small" id="saveApiBtn">저장하고 연결 확인</button>
+          <div class="status-line" id="apiStatus"></div>
+          <p class="hint" style="margin-top:18px;">이 값은 새로고침하면 초기화됩니다. 백엔드를 배포한 뒤 주소를 여기 입력하세요.</p>
+        </section>
+      </main>
+    </div>
+  </div>
+
+<script>
+(function () {
+  const state = {
+    apiBase: "http://127.0.0.1:8000",
+    conversationId: null,
+    chatMessages: [],
+  };
+
+  // ---------- 공통 유틸 ----------
+  function apiUrl(path) {
+    return state.apiBase.replace(/\/$/, "") + path;
+  }
+
+  async function api(path, options = {}) {
+    if (!state.apiBase) {
+      throw new Error("설정 탭에서 백엔드 API 주소를 먼저 입력해주세요.");
+    }
+    const res = await fetch(apiUrl(path), {
+      headers: { "Content-Type": "application/json" },
+      ...options,
+    });
+    if (!res.ok) {
+      let detail = res.statusText;
+      try {
+        const body = await res.json();
+        detail = body.detail || detail;
+      } catch (_) {}
+      throw new Error(detail);
+    }
+    if (res.status === 204) return null;
+    return res.json();
+  }
+
+  // ---------- 탭 전환 ----------
+  const tabButtons = document.querySelectorAll(".tab-btn");
+  const panels = document.querySelectorAll(".panel");
+  tabButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      tabButtons.forEach((b) => b.classList.remove("active"));
+      panels.forEach((p) => p.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById("panel-" + btn.dataset.tab).classList.add("active");
+      if (btn.dataset.tab === "data") loadRecords();
+      if (btn.dataset.tab === "history") loadConversations();
+    });
+  });
+
+  // ---------- 요약 배지 ----------
+  async function loadSummary() {
+    const badge = document.getElementById("summaryBadge");
+    try {
+      const s = await api("/api/data/summary");
+      badge.innerHTML = `
+        <div class="item"><span class="label">기간</span><span class="value">${s.period}</span></div>
+        <div class="item"><span class="label">기록 수</span><span class="value">${s.count}개</span></div>
+        <div class="item"><span class="label">추세</span><span class="value trend-${s.trend}">${s.trend}</span></div>
+      `;
+    } catch (e) {
+      badge.innerHTML = `<div class="item"><span class="label">요약</span><span class="value">${e.message}</span></div>`;
+    }
+  }
+
+  // ---------- 채팅 ----------
+  const chatWindow = document.getElementById("chatWindow");
+  const chatForm = document.getElementById("chatForm");
+  const chatInput = document.getElementById("chatInput");
+  const sendBtn = document.getElementById("sendBtn");
+
+  function renderChat() {
+    chatWindow.innerHTML = "";
+    if (state.chatMessages.length === 0) {
+      const empty = document.createElement("div");
+      empty.className = "msg system";
+      empty.textContent = "그림 연습에 대해 무엇이든 물어보세요.";
+      chatWindow.appendChild(empty);
+    }
+    state.chatMessages.forEach((m) => {
+      const el = document.createElement("div");
+      el.className = "msg " + m.role;
+      el.textContent = m.content;
+      chatWindow.appendChild(el);
+    });
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+  }
+
+  chatForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const text = chatInput.value.trim();
+    if (!text) return;
+    state.chatMessages.push({ role: "user", content: text });
+    chatInput.value = "";
+    renderChat();
+
+    const loadingEl = document.createElement("div");
+    loadingEl.className = "msg assistant loading";
+    loadingEl.textContent = "AI가 답변을 작성하고 있어요...";
+    chatWindow.appendChild(loadingEl);
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+
+    sendBtn.disabled = true;
+    try {
+      const res = await api("/api/chat", {
+        method: "POST",
+        body: JSON.stringify({ message: text, conversation_id: state.conversationId }),
+      });
+      state.conversationId = res.conversation_id;
+      state.chatMessages.push({ role: "assistant", content: res.reply });
+      loadSummary();
+    } catch (err) {
+      state.chatMessages.push({ role: "system", content: "오류: " + err.message });
+    } finally {
+      sendBtn.disabled = false;
+      renderChat();
+    }
+  });
+
+  document.getElementById("newChatBtn").addEventListener("click", () => {
+    state.conversationId = null;
+    state.chatMessages = [];
+    renderChat();
+  });
+
+  // ---------- 데이터 기록 ----------
+  const recordForm = document.getElementById("recordForm");
+  const recordTableBody = document.getElementById("recordTableBody");
+  const recordEmpty = document.getElementById("recordEmpty");
+
+  async function loadRecords() {
+    recordTableBody.innerHTML = `<tr><td colspan="4">불러오는 중...</td></tr>`;
+    try {
+      const records = await api("/api/data");
+      recordTableBody.innerHTML = "";
+      recordEmpty.style.display = records.length === 0 ? "block" : "none";
+      records.forEach((r) => recordTableBody.appendChild(renderRecordRow(r)));
+    } catch (e) {
+      recordTableBody.innerHTML = `<tr><td colspan="4">${e.message}</td></tr>`;
+    }
+  }
+
+  function renderRecordRow(r) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${r.date}</td>
+      <td>${r.value}장</td>
+      <td>${r.memo || ""}</td>
+      <td class="actions">
+        <button class="btn secondary small" data-action="edit">수정</button>
+        <button class="btn danger" data-action="delete">삭제</button>
+      </td>
+    `;
+    tr.querySelector('[data-action="delete"]').addEventListener("click", async () => {
+      if (!confirm("이 기록을 삭제할까요?")) return;
+      try {
+        await api(`/api/data/${r.id}`, { method: "DELETE" });
+        loadRecords();
+        loadSummary();
+      } catch (e) {
+        alert(e.message);
+      }
+    });
+    tr.querySelector('[data-action="edit"]').addEventListener("click", () => startEditRow(tr, r));
+    return tr;
+  }
+
+  function startEditRow(tr, r) {
+    tr.innerHTML = `
+      <td><input type="date" value="${r.date}" id="edit-date" /></td>
+      <td><input type="number" min="0" value="${r.value}" id="edit-value" /></td>
+      <td><input type="text" value="${r.memo || ""}" id="edit-memo" /></td>
+      <td class="actions">
+        <button class="btn small" data-action="save">저장</button>
+        <button class="btn secondary small" data-action="cancel">취소</button>
+      </td>
+    `;
+    tr.querySelector('[data-action="cancel"]').addEventListener("click", loadRecords);
+    tr.querySelector('[data-action="save"]').addEventListener("click", async () => {
+      const date = tr.querySelector("#edit-date").value;
+      const value = Number(tr.querySelector("#edit-value").value);
+      const memo = tr.querySelector("#edit-memo").value;
+      try {
+        await api(`/api/data/${r.id}`, {
+          method: "PUT",
+          body: JSON.stringify({ date, value, memo }),
+        });
+        loadRecords();
+        loadSummary();
+      } catch (e) {
+        alert(e.message);
+      }
+    });
+  }
+
+  recordForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const date = document.getElementById("recDate").value;
+    const value = Number(document.getElementById("recValue").value);
+    const memo = document.getElementById("recMemo").value;
+    try {
+      await api("/api/data", {
+        method: "POST",
+        body: JSON.stringify({ date, value, memo }),
+      });
+      recordForm.reset();
+      loadRecords();
+      loadSummary();
+    } catch (e) {
+      alert(e.message);
+    }
+  });
+
+  // ---------- 대화 기록 ----------
+  const convoList = document.getElementById("convoList");
+  const convoEmpty = document.getElementById("convoEmpty");
+
+  async function loadConversations() {
+    convoList.innerHTML = "불러오는 중...";
+    try {
+      const convos = await api("/api/conversations");
+      convoList.innerHTML = "";
+      convoEmpty.style.display = convos.length === 0 ? "block" : "none";
+      convos.forEach((c) => {
+        const item = document.createElement("div");
+        item.className = "convo-item";
+        item.innerHTML = `
+          <div>
+            <div class="title">${c.title}</div>
+            <div class="date">${(c.created_at || "").slice(0, 16).replace("T", " ")}</div>
+          </div>
+          <div class="buttons">
+            <button class="btn secondary small" data-action="load">불러오기</button>
+            <button class="btn danger" data-action="delete">삭제</button>
+          </div>
+        `;
+        item.querySelector('[data-action="load"]').addEventListener("click", () => loadConversationById(c.id));
+        item.querySelector('[data-action="delete"]').addEventListener("click", async () => {
+          if (!confirm("이 대화를 삭제할까요?")) return;
+          await api(`/api/conversations/${c.id}`, { method: "DELETE" });
+          loadConversations();
+        });
+        convoList.appendChild(item);
+      });
+    } catch (e) {
+      convoList.innerHTML = e.message;
+    }
+  }
+
+  async function loadConversationById(id) {
+    try {
+      const convo = await api(`/api/conversations/${id}`);
+      state.conversationId = convo.id;
+      state.chatMessages = convo.messages || [];
+      document.querySelector('.tab-btn[data-tab="chat"]').click();
+      renderChat();
+    } catch (e) {
+      alert(e.message);
+    }
+  }
+
+  // ---------- 설정 ----------
+  const apiBaseInput = document.getElementById("apiBaseInput");
+  const apiStatus = document.getElementById("apiStatus");
+
+  document.getElementById("saveApiBtn").addEventListener("click", async () => {
+    state.apiBase = apiBaseInput.value.trim();
+    apiStatus.textContent = "연결 확인 중...";
+    apiStatus.className = "status-line";
+    try {
+      await api("/api/data/summary");
+      apiStatus.textContent = "연결되었습니다.";
+      apiStatus.className = "status-line ok";
+      loadSummary();
+      loadRecords();
+      loadConversations();
+    } catch (e) {
+      apiStatus.textContent = "연결 실패: " + e.message;
+      apiStatus.className = "status-line err";
+    }
+  });
+
+  // ---------- 초기화 ----------
+  document.getElementById("recDate").valueAsDate = new Date();
+  loadSummary();
+  renderChat();
+})();
+</script>
+</body>
+</html>

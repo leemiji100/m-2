@@ -1,0 +1,7 @@
+backend/.env
+backend/venv/
+**/__pycache__/
+*.py[cod]
+test-*-firebase-adminsdk-*.json
+*.json
+.DS_Store
