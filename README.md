@@ -38,7 +38,7 @@ pip install -r requirements.txt
 cp .env.example .env       # 값 채워넣기
 uvicorn main:app --reload
 ```
-- Swagger UI: [([https://m-2-mlrsbwmkr-zheltpdl.vercel.app]
+- Swagger UI: [[([https://m-2-mlrsbwmkr-zheltpdl.vercel.app]](https://m-2-lovat.vercel.app/)
 
 ### 프론트엔드
 `frontend/index.html`을 브라우저로 열거나, VSCode의 Live Server 등으로 실행합니다.
