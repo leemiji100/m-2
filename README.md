@@ -87,5 +87,5 @@ uvicorn main:app --reload
 
 https://m-2-aja3.onrender.com/docs
 https://vercel.com/zheltpdl/m-2
-https://m-2-mlrsbwmkr-zheltpdl.vercel.app/
+
 
