@@ -82,7 +82,10 @@ uvicorn main:app --reload
 
 - [ ] 대화 기록 화면 (불러오기 동작)
 - [ ] <img width="1430" height="875" alt="image" src="https://github.com/user-attachments/assets/08a1c6b6-e86e-4088-8355-dc4d5ae117b7" />
+<img width="1915" height="960" alt="image" src="https://github.com/user-attachments/assets/d685d1f3-852a-4d0c-b263-a138e88b0d6d" />
 
 
 https://m-2-aja3.onrender.com/docs
+https://vercel.com/zheltpdl/m-2
+https://m-2-mlrsbwmkr-zheltpdl.vercel.app/
 
