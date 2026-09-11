@@ -74,5 +74,11 @@ uvicorn main:app --reload
 
 ## 제출 스크린샷 체크리스트
 - [ ] 데이터 요약이 보이는 채팅 화면 (질문 + 답변 포함)
+- [ ] <img width="1272" height="847" alt="image" src="https://github.com/user-attachments/assets/d6469d2e-4314-4462-9658-4671d333ecf8" />
+
 - [ ] 데이터 관리 화면 (기록 추가/수정/삭제 중 1개 동작)
+- [ ] <img width="1290" height="897" alt="image" src="https://github.com/user-attachments/assets/4c0b6538-50c1-4241-b547-4b79b8372355" />
+
 - [ ] 대화 기록 화면 (불러오기 동작)
+- [ ] <img width="1430" height="875" alt="image" src="https://github.com/user-attachments/assets/08a1c6b6-e86e-4088-8355-dc4d5ae117b7" />
+
