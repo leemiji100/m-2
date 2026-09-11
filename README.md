@@ -78,7 +78,11 @@ uvicorn main:app --reload
 
 - [ ] 데이터 관리 화면 (기록 추가/수정/삭제 중 1개 동작)
 - [ ] <img width="1290" height="897" alt="image" src="https://github.com/user-attachments/assets/4c0b6538-50c1-4241-b547-4b79b8372355" />
+<img width="1875" height="897" alt="image" src="https://github.com/user-attachments/assets/7e2961e7-3e3d-4dab-a481-83468b824b64" />
 
 - [ ] 대화 기록 화면 (불러오기 동작)
 - [ ] <img width="1430" height="875" alt="image" src="https://github.com/user-attachments/assets/08a1c6b6-e86e-4088-8355-dc4d5ae117b7" />
+
+
+https://m-2-aja3.onrender.com/docs
 
